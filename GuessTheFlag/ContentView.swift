@@ -8,11 +8,18 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var rotationAmount0 = 0.0
+    @State private var rotationAmount1 = 0.0
+    @State private var rotationAmount2 = 0.0
     @State private var showingScore = false
     @State private var scoreTitle = ""
     @State private var userScore = 0
     @State private var userRound = 1
     @State private var gameOver = false
+    @State private var chosenFlag = -1
+    @State private var rotationAmount:Double = 0.0
+    @State private var opacityAmount:Double = 1.0
+    @State private var scaleAmount:Double = 1.0
     @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Russia", "Spain", "UK", "US"].shuffled()
     @State var correctAnswer = Int.random(in: 0...2)
     
@@ -28,8 +35,8 @@ struct ContentView: View {
                 Spacer()
                 Text("Guess the Flag")
                     .titleStyle()
-                    //.font(.largeTitle.bold())
-                    //.foregroundColor(.white)
+                    .font(.largeTitle.bold())
+                    .foregroundColor(.white)
                 
                 VStack(spacing: 15) {
                     VStack {
@@ -44,8 +51,19 @@ struct ContentView: View {
                     ForEach(0..<3) { number in
                         Button {
                             flagTapped(number)
+                            chosenFlag = number
+                            rotationAmount = 0.0
+                            opacityAmount = 1.0
+                            withAnimation {
+                                rotationAmount = 360
+                                opacityAmount = 0.25
+                                scaleAmount = 0.5
+                            }
                         } label: {
-                            FlagImage(country: countries[number])
+                            FlagImage(country: countries[number],
+                                      rotationAmount: (chosenFlag == number ? rotationAmount : 0),
+                                      opacityAmount: (chosenFlag == number ? 1.0 : opacityAmount),
+                                      scaleAmount: (chosenFlag == number ? 1.0 : scaleAmount))
                         }
                     }
                 }
@@ -107,6 +125,11 @@ struct ContentView: View {
     func askQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+        
+        chosenFlag = -1
+        rotationAmount = 0.0
+        opacityAmount = 1.0
+        scaleAmount = 1.0
     }
     
     func newGame() {
@@ -119,12 +142,18 @@ struct ContentView: View {
 
 struct FlagImage: View {
     var country: String
+    var rotationAmount: Double
+    var opacityAmount: Double
+    var scaleAmount: Double
 
     var body: some View {
         Image(country)
             .renderingMode(.original)
             .clipShape(Capsule())
             .shadow(radius: 5)
+            .scaleEffect(scaleAmount)
+            .rotationEffect(.degrees(rotationAmount))
+            .opacity(opacityAmount)
     }
 }
 
